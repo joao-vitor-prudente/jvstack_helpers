@@ -36,6 +36,7 @@ obj.values(); // [1, 2, 3]
 obj.omit("b").unwrap(); // { a: 1, c: 3 }
 obj.pick("a", "c").unwrap(); // { a: 1, c: 3 }
 obj.extend({ d: 4 }).unwrap(); // { a: 1, b: 2, c: 3, d: 4 }
+obj.with({ a: "some string" }) // { a: "some string", b: 2, d: 4 }
 
 ObjectExtensions.fromEntries([
   ["a", 1],

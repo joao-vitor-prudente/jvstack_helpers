@@ -65,11 +65,28 @@ export class ObjectExtensions<T extends Record<PropertyKey, unknown>> {
 
   /**
    * Returns a new wrapper with the original object extended with the given object.
+   * Keys in the given object that are also in the original object must match the original object's type.
+   * To override the type of a key, use {@link with} instead.
    *
    * @param obj - The object to extend the original object with.
    */
-  public extend<TOther extends Record<PropertyKey, unknown>>(obj: TOther): ObjectExtensions<T & TOther> {
+  public extend<TOther extends Partial<T> & Omit<Record<PropertyKey, unknown>, keyof T>>(
+    obj: TOther,
+  ): ObjectExtensions<T & TOther> {
     return new ObjectExtensions({ ...this.obj, ...obj });
+  }
+
+  /**
+   * Returns a new wrapper with the original object with the given keys overridden.
+   *
+   * @param obj - The object to partially override the original object with.
+   */
+  public with<TOther extends Partial<Record<keyof T, unknown>>>(
+    obj: TOther,
+  ): ObjectExtensions<Omit<T, keyof TOther> & TOther> {
+    const keysToOmit = new ObjectExtensions(obj).keys();
+    const omitted = new ObjectExtensions(this.obj).omit(...keysToOmit);
+    return new ObjectExtensions({ ...omitted.obj, ...obj });
   }
 
   /**

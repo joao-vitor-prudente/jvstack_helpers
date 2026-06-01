@@ -86,4 +86,19 @@ describe("ObjectExtensions", () => {
       expect(original).toEqual({ a: 1, b: 2, c: 3 });
     });
   });
+
+  describe("with", () => {
+    it("overrides the given keys", () => {
+      const result = subject.with({ a: "some string" }).unwrap();
+
+      expect(result).toEqual({ a: "some string", b: 2, c: 3 });
+    });
+  });
+
+  it("returns a new wrapper without mutating the original object", () => {
+    const original = subject.unwrap();
+    subject.with({ a: "some string" });
+
+    expect(original).toEqual({ a: 1, b: 2, c: 3 });
+  });
 });
