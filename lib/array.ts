@@ -3,9 +3,80 @@
  */
 export class ArrayExtensions<T> extends Array<T> {
   public constructor(...items: T[]) {
-    super();
-    this.push(...items);
-    Object.setPrototypeOf(this, new.target.prototype);
+    super(...items);
+  }
+
+  /**
+   * Returns an array of numbers from `start` through `end`, inclusive, with the given step.
+   *
+   * @param start - The starting number.
+   * @param end - The ending number, included in the result.
+   * @param step - The step between numbers. Defaults to 1.
+   *
+   * @example
+   * ```ts
+   * ArrayExtensions.rangeInclusive(1, 5, 2);
+   * // [1, 3, 5]
+   * ```
+   */
+  public static rangeInclusive(start: number, end: number, step = 1): ArrayExtensions<number> {
+    const result = new ArrayExtensions<number>();
+    for (let i = start; i <= end; i += step) {
+      result.push(i);
+    }
+    return result;
+  }
+
+  /**
+   * Returns an array of numbers from `start` up to but not including `end`, with the given step.
+   *
+   * @param start - The starting number.
+   * @param end - The ending number, excluded from the result.
+   * @param step - The step between numbers. Defaults to 1.
+   *
+   * @example
+   * ```ts
+   * ArrayExtensions.rangeExclusive(1, 5);
+   * // [1, 2, 3, 4]
+   * ```
+   */
+  public static rangeExclusive(start: number, end: number, step = 1): ArrayExtensions<number> {
+    const result = new ArrayExtensions<number>();
+    for (let i = start; i < end; i += step) {
+      result.push(i);
+    }
+    return result;
+  }
+
+  public override slice(start?: number, end?: number): ArrayExtensions<T> {
+    const result = new ArrayExtensions<T>();
+    result.push(...super.slice(start, end));
+    return result;
+  }
+
+  public override map<U>(
+    callbackfn: (value: T, index: number, array: T[]) => U,
+    thisArg?: unknown,
+  ): ArrayExtensions<U> {
+    return new ArrayExtensions(...super.map(callbackfn, thisArg));
+  }
+
+  public override filter<S extends T>(
+    predicate: (value: T, index: number, array: T[]) => value is S,
+    thisArg?: unknown,
+  ): ArrayExtensions<S>;
+  public override filter(
+    predicate: (value: T, index: number, array: T[]) => unknown,
+    thisArg?: unknown,
+  ): ArrayExtensions<T> {
+    return new ArrayExtensions(...super.filter(predicate, thisArg));
+  }
+
+  public override flatMap<U, This = undefined>(
+    callback: (this: This, value: T, index: number, array: T[]) => U | readonly U[],
+    thisArg?: This,
+  ): ArrayExtensions<U> {
+    return new ArrayExtensions(...super.flatMap(callback, thisArg));
   }
 
   /**
@@ -167,7 +238,32 @@ export class ArrayExtensions<T> extends Array<T> {
   }
 
   /**
-   * Splits the array into consecutive windows of at most `size` items.
+   * Returns overlapping sliding windows of exactly `size` items, advancing one index at a time.
+   *
+   * @param size - The number of items in each window.
+   * @returns An array of overlapping window arrays.
+   *
+   * @example
+   * ```ts
+   * new ArrayExtensions(1, 2, 3, 4, 5).windows(2);
+   * // [[1, 2], [2, 3], [3, 4], [4, 5]]
+   * ```
+   */
+  public windows(size: number): ArrayExtensions<ArrayExtensions<T>> {
+    const windows = new ArrayExtensions<ArrayExtensions<T>>();
+    for (let i = 0; i <= this.length - size; i++) {
+      windows.push(this.slice(i, i + size));
+    }
+    return windows;
+  }
+
+  /** Returns the zero-based index of the last item in the array. */
+  public get lastIndex(): number {
+    return this.length - 1;
+  }
+
+  /**
+   * Splits the array into consecutive disjoint windows of at most `size` items.
    * The last window may contain fewer items when the length is not evenly divisible.
    *
    * @param size - Maximum number of items in each window.
@@ -175,64 +271,15 @@ export class ArrayExtensions<T> extends Array<T> {
    *
    * @example
    * ```ts
-   * [...new ArrayExtensions(1, 2, 3, 4, 5).windows(2).map((window) => [...window])];
+   * new ArrayExtensions(1, 2, 3, 4, 5).chunk(2);
    * // [[1, 2], [3, 4], [5]]
    * ```
    */
-  public windows(size: number): ArrayExtensions<ArrayExtensions<T>> {
-    const windows = new ArrayExtensions<ArrayExtensions<T>>();
-    for (const item of this) {
-      const lastWindow = windows.at(-1);
-      if (!lastWindow || lastWindow.length === size) windows.push(new ArrayExtensions(item));
-      else lastWindow.push(item);
-    }
-    return windows;
-  }
-
-  /**
-   * Returns an array of numbers from `start` through `end`, inclusive, with the given step.
-   *
-   * @param start - The starting number.
-   * @param end - The ending number, included in the result.
-   * @param step - The step between numbers. Defaults to 1.
-   *
-   * @example
-   * ```ts
-   * ArrayExtensions.rangeInclusive(1, 5, 2);
-   * // [1, 3, 5]
-   * ```
-   */
-  public static rangeInclusive(start: number, end: number, step = 1): ArrayExtensions<number> {
-    const result = new ArrayExtensions<number>();
-    for (let i = start; i <= end; i += step) {
-      result.push(i);
+  public chunk(size: number): ArrayExtensions<ArrayExtensions<T>> {
+    const result = new ArrayExtensions<ArrayExtensions<T>>();
+    for (let i = 0; i < this.length; i += size) {
+      result.push(this.slice(i, i + size));
     }
     return result;
-  }
-
-  /**
-   * Returns an array of numbers from `start` up to but not including `end`, with the given step.
-   *
-   * @param start - The starting number.
-   * @param end - The ending number, excluded from the result.
-   * @param step - The step between numbers. Defaults to 1.
-   *
-   * @example
-   * ```ts
-   * ArrayExtensions.rangeExclusive(1, 5);
-   * // [1, 2, 3, 4]
-   * ```
-   */
-  public static rangeExclusive(start: number, end: number, step = 1): ArrayExtensions<number> {
-    const result = new ArrayExtensions<number>();
-    for (let i = start; i < end; i += step) {
-      result.push(i);
-    }
-    return result;
-  }
-
-  /** Returns the zero-based index of the last item in the array. */
-  public get lastIndex(): number {
-    return this.length - 1;
   }
 }

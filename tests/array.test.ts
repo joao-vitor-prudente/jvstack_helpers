@@ -180,13 +180,18 @@ describe("ArrayExtensions", () => {
   });
 
   describe("windows", () => {
-    it("splits the array into consecutive windows of the given size", () => {
+    it("returns overlapping sliding windows of the given size", () => {
       const windows = [...new ArrayExtensions(1, 2, 3, 4, 5).windows(2)].map((window) => [...window]);
 
-      expect(windows).toEqual([[1, 2], [3, 4], [5]]);
+      expect(windows).toEqual([
+        [1, 2],
+        [2, 3],
+        [3, 4],
+        [4, 5],
+      ]);
     });
 
-    it("returns a single window when the array fits in one chunk", () => {
+    it("returns a single window when the array length matches the window size", () => {
       const windows = [...new ArrayExtensions(1, 2, 3).windows(3)].map((window) => [...window]);
 
       expect(windows).toEqual([[1, 2, 3]]);
@@ -202,10 +207,19 @@ describe("ArrayExtensions", () => {
       expect([...new ArrayExtensions<number>().windows(2)]).toEqual([]);
     });
 
+    it("returns no windows when the window size is larger than the array", () => {
+      expect([...new ArrayExtensions(1, 2).windows(3)]).toEqual([]);
+    });
+
     it("returns ArrayExtensions instances for each window", () => {
       const windows = new ArrayExtensions(1, 2, 3, 4, 5).windows(2);
 
-      expect(Array.from(windows).map((window) => Array.from(window))).toEqual([[1, 2], [3, 4], [5]]);
+      expect(Array.from(windows).map((window) => Array.from(window))).toEqual([
+        [1, 2],
+        [2, 3],
+        [3, 4],
+        [4, 5],
+      ]);
       expect(windows[0]).toBeInstanceOf(ArrayExtensions);
     });
   });
@@ -233,6 +247,24 @@ describe("ArrayExtensions", () => {
   describe("lastIndex", () => {
     it("returns the zero-based index of the last item in the array", () => {
       expect(new ArrayExtensions(1, 2, 3).lastIndex).toBe(2);
+    });
+  });
+
+  describe("chunk", () => {
+    it("splits the array into consecutive disjoint windows of the given size", () => {
+      const chunks = [...new ArrayExtensions(1, 2, 3, 4, 5).chunk(2)].map((chunk) => [...chunk]);
+
+      expect(chunks).toEqual([[1, 2], [3, 4], [5]]);
+    });
+
+    it("returns a single chunk when the array fits in one chunk", () => {
+      const chunks = [...new ArrayExtensions(1, 2, 3).chunk(4)].map((chunk) => [...chunk]);
+
+      expect(chunks).toEqual([[1, 2, 3]]);
+    });
+
+    it("returns no chunks when the array is empty", () => {
+      expect([...new ArrayExtensions<number>().chunk(2)]).toEqual([]);
     });
   });
 });
