@@ -61,15 +61,17 @@ export class ArrayExtensions<T> extends Array<T> {
     return new ArrayExtensions(...super.map(callbackfn, thisArg));
   }
 
+  /**
+   * Returns the elements of an array that meet the condition specified in a callback function.
+   *
+   * Due to TypeScript's limitations, explicit type guards must be passed to the predicate.
+   *
+   * @param predicate A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array.
+   */
   public override filter<S extends T>(
     predicate: (value: T, index: number, array: T[]) => value is S,
-    thisArg?: unknown,
-  ): ArrayExtensions<S>;
-  public override filter(
-    predicate: (value: T, index: number, array: T[]) => unknown,
-    thisArg?: unknown,
-  ): ArrayExtensions<T> {
-    return new ArrayExtensions(...super.filter(predicate, thisArg));
+  ): ArrayExtensions<S> {
+    return new ArrayExtensions(...super.filter(predicate));
   }
 
   public override flatMap<U, This = undefined>(

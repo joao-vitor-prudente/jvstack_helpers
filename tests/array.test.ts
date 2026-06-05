@@ -267,4 +267,29 @@ describe("ArrayExtensions", () => {
       expect([...new ArrayExtensions<number>().chunk(2)]).toEqual([]);
     });
   });
+
+  describe("slice", () => {
+    it("returns a new array with the given start and end indices", () => {
+      expect([...new ArrayExtensions(1, 2, 3, 4, 5).slice(1, 3)]).toEqual([2, 3]);
+    });
+  });
+
+  describe("map", () => {
+    it("returns a new array with the result of the callback", () => {
+      expect([...new ArrayExtensions(1, 2, 3).map((x) => x * 2)]).toEqual([2, 4, 6]);
+    });
+  });
+
+  describe("filter", () => {
+    it("returns a new array with the items that pass the predicate", () => {
+      [1, 2, 3, 4, 5].filter((x) => x % 2 === 0);
+      expect([...new ArrayExtensions(1, 2, 3, 4, 5).filter((x): x is number => x % 2 === 0)]).toEqual([2, 4]);
+    });
+  });
+
+  describe("flatMap", () => {
+    it("returns a new array with the result of the callback", () => {
+      expect([...new ArrayExtensions(1, 2, 3).flatMap((x) => [x, x * 2])]).toEqual([1, 2, 2, 4, 3, 6]);
+    });
+  });
 });
